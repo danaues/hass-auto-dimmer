@@ -1,0 +1,11 @@
+{
+  "domain": "auto_dimmer",
+  "name": "Auto Dimmer",
+  "version": "0.1",
+  "documentation": "https://github.com/danaues/hass-auto-dimmer",
+  "issue_tracker": "https://github.com/danaues/hass-auto-dimmer/issues",
+  "dependencies": [],
+  "codeowners": ["@danaues"],
+  "requirements": [],
+  "iot_class": "polling"
+}
