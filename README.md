@@ -1,3 +1,3 @@
-# Auto Dimming [[Home Assistant](https://www.home-assistant.io/) Component]
+# Auto Dimming Home Assistant Integration]
 
 WIP auto dimming integration for Home Assistant
