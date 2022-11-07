@@ -61,11 +61,25 @@ class AutoDimmer():
 
         _LOGGER.debug("AutoDimmer __init__; light_entities: %s", self._light_entities)
 
+
+    async def _async_init(self, interval):
+        _LOGGER.debug("AutoDimmer _async_init; interval: %s", interval)
+
+        self._track_state_change = async_track_state_change(
+            self._hass, self._light_entities, self._state_changed, to_state="on"
+        )
+
+        self._track_time_interval = async_track_time_interval(self._hass, self.async_update, interval)
+
+        self._hass.loop.create_task(self.async_update())
+
+
     async def unsubscribe(self) -> bool:
         """Unsubscribe to tracks for unload."""
         self._track_time_interval()
         self._track_state_change()
         return True
+
 
     async def _set_brightness(self, light: str, brightness: int):
         """Set the brightness of a light entity."""
@@ -78,6 +92,7 @@ class AutoDimmer():
         await self._hass.async_block_till_done()
         #await self._async_update()
         _LOGGER.debug("Auto Dim: Adjust light %s, to %s", light, brightness)
+
 
     async def _calculate_brightness(self):
         """Calculate the light brightness based on time of day."""
@@ -112,22 +127,11 @@ class AutoDimmer():
             # During Afternoon Transition
             _LOGGER.debug("calc bright; afternoon transition")
             current_delta = (current_time - afternoon_start).total_seconds()
-            return round((current_delta/afternoon_time_delta)*brightness_delta)+mininum_brightness
+            return maximum_brightness-round((current_delta/afternoon_time_delta)*brightness_delta)
         
         # Sleep Time, minumim brighness
         _LOGGER.debug("calc bright; evening minimum brightness")
         return mininum_brightness
-
-    async def _async_init(self, interval):
-        _LOGGER.debug("AutoDimmer _async_init; interval: %s", interval)
-
-        self._track_state_change = async_track_state_change(
-            self._hass, self._light_entities, self._state_changed, to_state="on"
-        )
-
-        self._track_time_interval = async_track_time_interval(self._hass, self.async_update, interval)
-
-        self._hass.loop.create_task(self.async_update())
 
 
     async def async_update(self, var1=None):
