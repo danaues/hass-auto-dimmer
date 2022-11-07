@@ -1,0 +1,36 @@
+{
+    "config": {
+      "step": {
+        "user": {
+          "title": "Choose a name for the Auto Dimmer",
+          "description": "Auto Dimmer will automatically adjust the brightness of the selected lights",
+          "data": {
+            "name": "Name"
+          }
+        }
+      },
+      "abort": {
+        "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+      }
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "Auto Dimmer options",
+          "description": "All settings for the Auto Dimmer component. No options are shown if you have this entry defined in YAML.",
+          "data": {
+            "light_entities": "light entities",
+            "transition": "transition: Transition time for brightness changes. (seconds)",
+            "interval": "interval: Time between brightness updates. (seconds)",
+            "max_brightness": "max_brightness: Highest brightness of lights during a cycle. (%)",
+            "min_brightness": "min_brightness: Lowest brightness of lights during a cycle. (%)"
+          }
+        }
+      },
+      "error": {
+        "option_error": "Invalid option",
+        "entity_missing": "One or more selected light entities are missing from Home Assistant"
+      }
+    }
+  }
+  
