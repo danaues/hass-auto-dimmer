@@ -10,6 +10,7 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME, ATTR_SUPPORTED_FEATURES
 from homeassistant.components.light import ATTR_BRIGHTNESS
+
 import homeassistant.helpers.config_validation as cv
 
 from copy import deepcopy

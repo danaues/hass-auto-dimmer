@@ -13,11 +13,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.components.light import DOMAIN as LIGHT_DOMAIN
 from homeassistant.components.light import ATTR_BRIGHTNESS, ATTR_TRANSITION
 from homeassistant.helpers.event import async_track_time_interval, async_track_state_change
+from homeassistant.helpers.sun import get_astral_event_next
 import homeassistant.util.dt as dt_util
 
 from homeassistant.const import (
     ATTR_ENTITY_ID,
     SERVICE_TURN_ON,
+    SUN_EVENT_SUNRISE,
+    SUN_EVENT_SUNSET,
 )
 
 
@@ -40,6 +43,10 @@ class AutoDimmer():
         transition: int,
         max_brightness: int,
         min_brightness: int,
+        morning_start: dt_util.time,
+        morning_end: dt_util.time,
+        afternoon_start: dt_util.time,
+        afternoon_end: dt_util.time,
     ):
         self._hass = hass
         self._name = name
@@ -48,6 +55,10 @@ class AutoDimmer():
         self._light_data: dict[str, dict[str,Any]] = {}
         self._max_brightness: int = max_brightness
         self._min_brightness: int = min_brightness
+        self._morning_start: dt_util.time = dt_util.parse_time(morning_start)
+        self._morning_end: dt_util.time = dt_util.parse_time(morning_end)
+        self._afternoon_start: dt_util.time = dt_util.parse_time(afternoon_start)
+        self._afternoon_end: dt_util.time = dt_util.parse_time(afternoon_end)
 
         for light in self._light_entities:
             self._light_data.setdefault(
@@ -100,15 +111,24 @@ class AutoDimmer():
         mininum_brightness = self._min_brightness
         maximum_brightness = self._max_brightness
 
-        current_time = dt_util.utcnow()
-        morning_start = dt_util.as_utc(datetime.combine(date.today(), dt_util.parse_time("09:00:00")))
-        morning_end = dt_util.as_utc(datetime.combine(date.today(), dt_util.parse_time("13:00:00")))
-        afternoon_start = dt_util.as_utc(datetime.combine(date.today(), dt_util.parse_time("17:00:00")))
-        afternoon_end = dt_util.as_utc(datetime.combine(date.today(), dt_util.parse_time("21:00:00")))
+        today = dt_util.start_of_local_day(dt_util.now())
+        current_time = dt_util.now()
+
+        sunrise_time = get_astral_event_next(self._hass, SUN_EVENT_SUNRISE, today)
+        sunset_time = get_astral_event_next(self._hass, SUN_EVENT_SUNSET, today)
+
+        morning_start = dt_util.as_local(datetime.combine(today, self._morning_start))
+        morning_end = dt_util.as_local(datetime.combine(today, self._morning_end))
+        afternoon_start = dt_util.as_local(datetime.combine(today,self._afternoon_start))
+        afternoon_end = dt_util.as_local(datetime.combine(today, self._afternoon_end))
 
         _LOGGER.debug("calc bright; current time: %s", current_time)
+        _LOGGER.debug("calc bright; sunrise time: %s", sunrise_time)
+        _LOGGER.debug("calc bright; sunset time: %s", sunset_time)
         _LOGGER.debug("calc bright; morning start: %s", morning_start)
-        
+        _LOGGER.debug("calc bright; morning end: %s", morning_end)
+        _LOGGER.debug("calc bright; afternoon start: %s", afternoon_start)
+        _LOGGER.debug("calc bright; afternoon end: %s", afternoon_end)
 
         brightness_delta = maximum_brightness - mininum_brightness
         morning_time_delta = (morning_end - morning_start).total_seconds()
@@ -130,7 +150,7 @@ class AutoDimmer():
             return maximum_brightness-round((current_delta/afternoon_time_delta)*brightness_delta)
         
         # Sleep Time, minumim brighness
-        _LOGGER.debug("calc bright; evening minimum brightness")
+        _LOGGER.debug("calc bright; morning/evening minimum brightness")
         return mininum_brightness
 
 

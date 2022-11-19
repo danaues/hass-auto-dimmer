@@ -23,7 +23,11 @@
             "transition": "transition: Transition time for brightness changes. (seconds)",
             "interval": "interval: Time between brightness updates. (seconds)",
             "max_brightness": "max_brightness: Highest brightness of lights during a cycle. (%)",
-            "min_brightness": "min_brightness: Lowest brightness of lights during a cycle. (%)"
+            "min_brightness": "min_brightness: Lowest brightness of lights during a cycle. (%)",
+            "morning_start": "Time to start the morning brightness transition",
+            "morning_end": "Time to finish the morning brightness transition",
+            "afternoon_start": "Time to start the afternoon brightness transition",
+            "afternoon_end": "Time to finish the afternoon brightness transition"
           }
         }
       },

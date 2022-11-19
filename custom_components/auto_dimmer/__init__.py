@@ -17,6 +17,10 @@ from .const import (
     CONF_TRANSITION,
     CONF_MAX_BRIGHTNESS,
     CONF_MIN_BRIGHTNESS,
+    CONF_MORNING_START,
+    CONF_MORNING_END,
+    CONF_AFTERNOON_START,
+    CONF_AFTERNOON_END,
 )
 
 from .auto_dimmer import AutoDimmer
@@ -67,6 +71,10 @@ async def async_setup_entry(
     light_entities = options[CONF_LIGHTS]
     max_brightness = options[CONF_MAX_BRIGHTNESS]
     min_brightness = options[CONF_MIN_BRIGHTNESS]
+    morning_start = options[CONF_MORNING_START]
+    morning_end = options[CONF_MORNING_END]
+    afternoon_start = options[CONF_AFTERNOON_START]
+    afternoon_end = options[CONF_AFTERNOON_END]
 
     interval_delta = timedelta(seconds=interval)
 
@@ -77,7 +85,11 @@ async def async_setup_entry(
         light_entities,
         transition,
         max_brightness,
-        min_brightness
+        min_brightness,
+        morning_start,
+        morning_end,
+        afternoon_start,
+        afternoon_end,
     )
 
     await myautodimmer._async_init(interval=interval_delta)

@@ -1,0 +1,28 @@
+# Describes the format for available light services
+
+auto_dim:
+  name: Automatically Dim the Light
+  description: >
+    Set the selected lights to dim to a specified level, over the amount of specified time.
+  target:
+    entity:
+      domain: light
+  fields:
+    transition:
+      name: Transition
+      description: Duration it takes to get to next state.
+      selector:
+        number:
+          min: 0
+          max: 300
+          unit_of_measurement: seconds
+    brightness_pct:
+      name: Brightness
+      description: Number indicating percentage of full brightness, where 0
+        turns the light off, 1 is the minimum brightness and 100 is the maximum
+        brightness supported by the light.
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
