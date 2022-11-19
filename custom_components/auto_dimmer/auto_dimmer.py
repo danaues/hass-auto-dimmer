@@ -192,23 +192,22 @@ class AutoDimmer():
             
     
     async def _state_changed(self, entity_id, from_state, to_state):
-        if from_state:
-            _LOGGER.debug("light state change: %s from: %s brightness %s, to: %s brightness %s", entity_id, from_state.state, from_state.attributes[ATTR_BRIGHTNESS], to_state.state, to_state.attributes[ATTR_BRIGHTNESS])
-        
-        if to_state:
-            _LOGGER.debug("light state change: %s from: None, to: %s brightness %s", entity_id, to_state.state, to_state.attributes[ATTR_BRIGHTNESS])
         
         if from_state is None and to_state is None:
             # Entity is not ready yet, ignore:
+            _LOGGER.debug("_state_changed - no ready: %s ",entity_id)
             return
         elif from_state is None:
             # Initial Startup, do nothing
+            _LOGGER.debug("_state_changed - Initial Startup: %s ",entity_id)
             self._hass.loop.create_task(self.async_update())
         elif to_state.state != "on":
             # this light entity was turned off, disable updates
+            _LOGGER.debug("_state_changed - Turned Off - Disable: %s ",entity_id)
             self._light_data[entity_id]["enabled"] = False
         elif from_state.state == "off":
             # this light entity was just turned from off to on, enable and update
+            _LOGGER.debug("_state_changed - Off to On - Enable and Update: %s ",entity_id)
             self._light_data[entity_id]["enabled"] = True
             self._light_data[entity_id]["last_brightness"] = None
             self._hass.loop.create_task(self.async_update())
