@@ -156,10 +156,10 @@ def validate_schedule_options(options, user_input, errors):
         afternoon_start_time = sunset_time + timedelta(minutes=user_input[CONF_AFTERNOON_START_OFFSET])
     
     #Afternoon Finish Time:
-    if options[CONF_AFTERNOON_START_TYPE] == TIME_OPTION_SPECIFY:
+    if options[CONF_AFTERNOON_END_TYPE] == TIME_OPTION_SPECIFY:
         afternoon_end_time = dt_util.as_local(datetime.combine(today, dt_util.parse_time(user_input[CONF_AFTERNOON_END_TIME])))
     else:
-        afternoon_end_time = sunset_time + timedelta(minutes=user_input[CONF_AFTERNOON_START_OFFSET])
+        afternoon_end_time = sunset_time + timedelta(minutes=user_input[CONF_AFTERNOON_END_OFFSET])
 
 
     if morning_end_time < morning_start_time:
