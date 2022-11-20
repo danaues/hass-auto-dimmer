@@ -1,7 +1,7 @@
 {
   "domain": "auto_dimmer",
   "name": "Auto Dimmer",
-  "version": "0.1",
+  "version": "0.1.4",
   "config_flow": true,
   "documentation": "https://github.com/danaues/hass-auto-dimmer",
   "issue_tracker": "https://github.com/danaues/hass-auto-dimmer/issues",

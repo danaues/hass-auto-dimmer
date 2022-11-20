@@ -17,23 +17,39 @@
       "step": {
         "init": {
           "title": "Auto Dimmer options",
-          "description": "All settings for the Auto Dimmer component. No options are shown if you have this entry defined in YAML.",
+          "description": "Main settings for the Auto Dimmer component.",
           "data": {
-            "light_entities": "light entities",
-            "transition": "transition: Transition time for brightness changes. (seconds)",
-            "interval": "interval: Time between brightness updates. (seconds)",
-            "max_brightness": "max_brightness: Highest brightness of lights during a cycle. (%)",
-            "min_brightness": "min_brightness: Lowest brightness of lights during a cycle. (%)",
-            "morning_start": "Time to start the morning brightness transition",
-            "morning_end": "Time to finish the morning brightness transition",
-            "afternoon_start": "Time to start the afternoon brightness transition",
-            "afternoon_end": "Time to finish the afternoon brightness transition"
+            "light_entities": "Select the lights to adjust",
+            "interval": "How often to adjust the brightness. (seconds)",
+            "max_brightness": "Peak Brightness (between morning and afternoon)",
+            "min_brightness": "Early Morning and Evening Brighness:",
+            "morning_start_type": "Morning Start Time:",
+            "morning_end_type": "Morning Finish Time:",
+            "afternoon_start_type": "Afternoon Start Time:",
+            "afternoon_end_type": "Afternoon Finish Time:"
+          }
+        },
+        "schedule": {
+          "title": "Auto Dimmer Schedule",
+          "description": "Time Schedule for Auto Dimmer component.",
+          "data": {
+            "morning_start_time": "Morning Start: Time to start the morning brightness transition",
+            "morning_end_time": "Morning Finish: Time to finish the morning brightness transition",
+            "afternoon_start_time": "Afternoon Start: Time to start the afternoon brightness transition",
+            "afternoon_end_time": "Afternoon Finish: Time to finish the afternoon brightness transition",
+            "morning_start_offset": "Morning Start: Offset from sunrise (+/- minutes)",
+            "morning_end_offset": "Morning Finish: Offset from sunrise (+/- minutes)",
+            "afternoon_start_offset": "Afternoon Start: Offset from sunset (+/- minutes)",
+            "afternoon_end_offset": "Afternoon Finish: Offset from sunset (+/- minutes)"
           }
         }
       },
       "error": {
         "option_error": "Invalid option",
-        "entity_missing": "One or more selected light entities are missing from Home Assistant"
+        "entity_missing": "One or more selected light entities are missing from Home Assistant",
+        "morning_schedule": "The morning start time is after the morning finish time",
+        "midday_schedule": "The afternoon start time is before the morning finish time",
+        "afternoon_schedule": "The afternoon start time is after the afternoon finish time"
       }
     }
   }

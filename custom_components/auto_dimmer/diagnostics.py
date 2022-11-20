@@ -26,5 +26,12 @@ async def async_get_config_entry_diagnostics(
             "Light Entities": auto_dimmer._light_entities,
             "Max Brightness": auto_dimmer._max_brightness,
             "Min Brightness": auto_dimmer._min_brightness,
+            "Morning Start Time": auto_dimmer.morning_start_time,
+            "Morning End Time": auto_dimmer.morning_end_time,
+            "Afternoon Start Time": auto_dimmer.afternoon_start_time,
+            "Afternoon End Time": auto_dimmer.afternoon_end_time,
         },
+        "light data": {
+            "lights": dict(auto_dimmer._light_data),
+        }
     }

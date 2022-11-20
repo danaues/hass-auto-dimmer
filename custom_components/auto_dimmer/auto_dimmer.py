@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import datetime, timedelta, date
-import pytz
 
 from typing import Any
 
@@ -23,6 +22,29 @@ from homeassistant.const import (
     SUN_EVENT_SUNSET,
 )
 
+from .const import (
+    CONF_LIGHTS,
+    CONF_MAX_BRIGHTNESS,
+    CONF_MIN_BRIGHTNESS,
+    CONF_MORNING_START_TYPE,
+    CONF_MORNING_END_TYPE,
+    CONF_AFTERNOON_START_TYPE,
+    CONF_AFTERNOON_END_TYPE,
+    CONF_MORNING_START_TIME,
+    CONF_MORNING_END_TIME,
+    CONF_AFTERNOON_START_TIME,
+    CONF_AFTERNOON_END_TIME,
+    CONF_MORNING_START_OFFSET,
+    CONF_MORNING_END_OFFSET,
+    CONF_AFTERNOON_START_OFFSET,
+    CONF_AFTERNOON_END_OFFSET,
+    TIME_OPTION_SPECIFY,
+    DEFAULT_MORNING_START_TIME,
+    DEFAULT_MORNING_END_TIME,
+    DEFAULT_AFTERNOON_START_TIME,
+    DEFAULT_AFTERNOON_END_TIME,
+    DEFAULT_OFFSET,
+)
 
 def _is_time_between(check_time, start_time, end_time) -> bool:
     """Check if check_time is between start_time and end_time."""
@@ -39,27 +61,43 @@ class AutoDimmer():
         hass: HomeAssistant,
         name: str,
         interval: int,
-        light_entities: list[str],
-        transition: int,
-        max_brightness: int,
-        min_brightness: int,
-        morning_start: dt_util.time,
-        morning_end: dt_util.time,
-        afternoon_start: dt_util.time,
-        afternoon_end: dt_util.time,
+        config_options: dict,
     ):
+
         self._hass = hass
         self._name = name
         self._interval = interval
-        self._light_entities = light_entities
+        self._light_entities = config_options[CONF_LIGHTS]
         self._light_data: dict[str, dict[str,Any]] = {}
-        self._max_brightness: int = max_brightness
-        self._min_brightness: int = min_brightness
-        self._morning_start: dt_util.time = dt_util.parse_time(morning_start)
-        self._morning_end: dt_util.time = dt_util.parse_time(morning_end)
-        self._afternoon_start: dt_util.time = dt_util.parse_time(afternoon_start)
-        self._afternoon_end: dt_util.time = dt_util.parse_time(afternoon_end)
+        self._max_brightness: int = config_options[CONF_MAX_BRIGHTNESS]
+        self._min_brightness: int = config_options[CONF_MIN_BRIGHTNESS]
+        
+        self._conf_morning_start_type = config_options[CONF_MORNING_START_TYPE]
+        self._conf_morning_end_type = config_options[CONF_MORNING_END_TYPE]
+        self._conf_afternoon_start_type = config_options[CONF_AFTERNOON_START_TYPE]
+        self._conf_afternoon_end_type = config_options[CONF_AFTERNOON_END_TYPE]
+        
+        self._conf_morning_start_time = config_options.get(CONF_MORNING_START_TIME, DEFAULT_MORNING_START_TIME)
+        self._conf_morning_end_time =  config_options.get(CONF_MORNING_END_TIME, DEFAULT_MORNING_END_TIME)
+        self._conf_afternoon_start_time =  config_options.get(CONF_AFTERNOON_START_TIME, DEFAULT_AFTERNOON_START_TIME)
+        self._conf_afternoon_end_time =  config_options.get(CONF_AFTERNOON_END_TIME, DEFAULT_AFTERNOON_END_TIME)
+        
+        self._conf_morning_start_offset =  config_options.get(CONF_MORNING_START_OFFSET, DEFAULT_OFFSET)
+        self._conf_morning_end_offset =  config_options.get(CONF_MORNING_END_OFFSET, DEFAULT_OFFSET)
+        self._conf_afternoon_start_offset =  config_options.get(CONF_AFTERNOON_START_OFFSET, DEFAULT_OFFSET)
+        self._conf_afternoon_end_offset =  config_options.get(CONF_AFTERNOON_END_OFFSET, DEFAULT_OFFSET)
 
+        self._today: datetime = dt_util.start_of_local_day(dt_util.now())
+
+        _LOGGER.debug("Auto dimmer init; Dimmer Name: %s", self._name)
+
+        self.morning_start_time = None
+        self.morning_end_time = None
+        self.afternoon_start_time = None
+        self.afternoon_end_time = None
+
+        self._calculate_schedule()
+ 
         for light in self._light_entities:
             self._light_data.setdefault(
                 light, {
@@ -72,6 +110,43 @@ class AutoDimmer():
 
         _LOGGER.debug("AutoDimmer __init__; light_entities: %s", self._light_entities)
 
+    def _calculate_schedule(self):
+        """calculate sunrise and sunset times for current day"""
+   
+        self._sunrise_time = dt_util.as_local(get_astral_event_next(self._hass, SUN_EVENT_SUNRISE))
+        self._sunset_time = dt_util.as_local(get_astral_event_next(self._hass, SUN_EVENT_SUNSET))
+        
+        _LOGGER.debug("schedule; sunrise time: %s", self._sunrise_time)
+        _LOGGER.debug("schedule; sunset time: %s",  self._sunset_time)
+        
+        #Morning Start Time:
+        if self._conf_morning_start_type == TIME_OPTION_SPECIFY:
+            self.morning_start_time = dt_util.as_local(datetime.combine(self._today, dt_util.parse_time(self._conf_morning_start_time)))
+        else:
+            self.morning_start_time = self._sunrise_time + timedelta(minutes=self._conf_morning_start_offset)
+        
+        #Morning Finish Time:
+        if self._conf_morning_end_type == TIME_OPTION_SPECIFY:
+            self.morning_end_time = dt_util.as_local(datetime.combine(self._today, dt_util.parse_time(self._conf_morning_end_time)))
+        else:
+            self.morning_end_time = self._sunrise_time + timedelta(minutes=self._conf_morning_end_offset)
+        
+        #Afternoon Start Time:
+        if self._conf_afternoon_start_type == TIME_OPTION_SPECIFY:
+            self.afternoon_start_time = dt_util.as_local(datetime.combine(self._today, dt_util.parse_time(self._conf_afternoon_start_time)))
+        else:
+            self.afternoon_start_time = self._sunset_time + timedelta(minutes=self._conf_afternoon_start_offset)
+        
+        #Afternoon Finish Time:
+        if self._conf_afternoon_end_type == TIME_OPTION_SPECIFY:
+            self.afternoon_end_time = dt_util.as_local(datetime.combine(self._today, dt_util.parse_time(self._conf_afternoon_end_time)))
+        else:
+            self.afternoon_end_time = self._sunset_time + timedelta(minutes=self._conf_afternoon_end_offset)
+        
+        _LOGGER.debug("schedule; morning start time: %s", self.morning_start_time)
+        _LOGGER.debug("schedule; morning end time: %s", self.morning_end_time)
+        _LOGGER.debug("schedule; afternoon start time: %s", self.afternoon_start_time)
+        _LOGGER.debug("schedule; afternoon end time: %s", self.afternoon_end_time)
 
     async def _async_init(self, interval):
         _LOGGER.debug("AutoDimmer _async_init; interval: %s", interval)
@@ -111,42 +186,28 @@ class AutoDimmer():
         mininum_brightness = self._min_brightness
         maximum_brightness = self._max_brightness
 
-        today = dt_util.start_of_local_day(dt_util.now())
         current_time = dt_util.now()
-
-        sunrise_time = get_astral_event_next(self._hass, SUN_EVENT_SUNRISE, today)
-        sunset_time = get_astral_event_next(self._hass, SUN_EVENT_SUNSET, today)
-
-        morning_start = dt_util.as_local(datetime.combine(today, self._morning_start))
-        morning_end = dt_util.as_local(datetime.combine(today, self._morning_end))
-        afternoon_start = dt_util.as_local(datetime.combine(today,self._afternoon_start))
-        afternoon_end = dt_util.as_local(datetime.combine(today, self._afternoon_end))
-
+        
+        _LOGGER.debug("calc bright; Dimmer Name: %s", self._name)
         _LOGGER.debug("calc bright; current time: %s", current_time)
-        _LOGGER.debug("calc bright; sunrise time: %s", sunrise_time)
-        _LOGGER.debug("calc bright; sunset time: %s", sunset_time)
-        _LOGGER.debug("calc bright; morning start: %s", morning_start)
-        _LOGGER.debug("calc bright; morning end: %s", morning_end)
-        _LOGGER.debug("calc bright; afternoon start: %s", afternoon_start)
-        _LOGGER.debug("calc bright; afternoon end: %s", afternoon_end)
 
         brightness_delta = maximum_brightness - mininum_brightness
-        morning_time_delta = (morning_end - morning_start).total_seconds()
-        afternoon_time_delta = (afternoon_end - afternoon_start).total_seconds()
+        morning_time_delta = (self.morning_end_time - self.morning_start_time).total_seconds()
+        afternoon_time_delta = (self.afternoon_end_time - self.afternoon_start_time).total_seconds()
 
-        if _is_time_between(current_time, morning_end, afternoon_start):
-            # During Mid Afternoon
-            _LOGGER.debug("calc bright; mid afternoon")
+        if _is_time_between(current_time, self.morning_end_time, self.afternoon_start_time):
+            # During Mid Day
+            _LOGGER.debug("calc bright; mid day")
             return maximum_brightness
-        elif _is_time_between(current_time, morning_start, morning_end):
+        elif _is_time_between(current_time, self.morning_start_time, self.morning_end_time):
             # During Morning Transition
             _LOGGER.debug("calc bright; morning transition")
-            current_delta = (current_time - morning_start).total_seconds()
+            current_delta = (current_time - self.morning_start_time).total_seconds()
             return round((current_delta/morning_time_delta)*brightness_delta)+mininum_brightness
-        elif _is_time_between(current_time, afternoon_start, afternoon_end):
+        elif _is_time_between(current_time, self.afternoon_start_time, self.afternoon_end_time):
             # During Afternoon Transition
             _LOGGER.debug("calc bright; afternoon transition")
-            current_delta = (current_time - afternoon_start).total_seconds()
+            current_delta = (current_time - self.afternoon_start_time).total_seconds()
             return maximum_brightness-round((current_delta/afternoon_time_delta)*brightness_delta)
         
         # Sleep Time, minumim brighness
@@ -156,6 +217,13 @@ class AutoDimmer():
 
     async def async_update(self, var1=None):
         """Update the brightness for each light"""
+
+        _LOGGER.debug("async_update")
+
+        if (dt_util.start_of_local_day(dt_util.now()) - self._today).days > 0:
+            # A new day has ticked by since last update, recalculate schedule times
+            self._today = dt_util.start_of_local_day(dt_util.now())
+            self._calculate_schedule()
 
         new_brightness = await self._calculate_brightness()
 
@@ -168,7 +236,7 @@ class AutoDimmer():
                 current_brightness = current_state.attributes[ATTR_BRIGHTNESS]
                 last_brightness = self._light_data[light_entity]["last_brightness"]
 
-                _LOGGER.debug("autodim update: light entity: %s current brightness: %s", light_entity, current_brightness)
+                _LOGGER.debug("auto dimmer update: light entity: %s current brightness: %s", light_entity, current_brightness)
                 light_data = self._light_data[light_entity]
                 if light_data["enabled"]:
                     # Light is enabled, adjust brightness if required
@@ -176,19 +244,19 @@ class AutoDimmer():
                         # Test to see if the current brightness matches our last setting, if not, disable control
                         if last_brightness is None or (current_brightness <= (last_brightness+2) and current_brightness >= (last_brightness-2)):
                             # brightness adjustment required, current brightness doesn't match new brightness
-                            _LOGGER.debug("autodim update: light entity: %s adjusted brightness to: %s", light_entity, new_brightness)
+                            _LOGGER.debug("auto dimmer update: light entity: %s adjusted brightness to: %s", light_entity, new_brightness)
                             await self._set_brightness(light_entity, new_brightness)
                             self._light_data[light_entity]["last_brightness"] = new_brightness
                         else:
                             # Light was manually adjusted, disable and ignore future updates
-                            _LOGGER.debug("autodim update: light entity: %s was manually adjusted.  Disabling", light_entity)
+                            _LOGGER.debug("auto dimmer update: light entity: %s was manually adjusted.  Disabling", light_entity)
                             self._light_data[light_entity]["enabled"] = False
                     else:
-                        _LOGGER.debug("autodim update: light %s brightness is the same, no adjustment", light_entity)        
+                        _LOGGER.debug("auto dimmer update: light %s brightness is the same, no adjustment", light_entity)        
                 else:
-                    _LOGGER.debug("autodim update: light entity: %s is disabled, no adjustment", light_entity)
+                    _LOGGER.debug("auto dimmer update: light entity: %s is disabled, no adjustment", light_entity)
             else:
-                _LOGGER.debug("autodim update: light entity: %s state is off, no adjustment", light_entity)
+                _LOGGER.debug("auto dimmer update: light entity: %s state is off, no adjustment", light_entity)
             
     
     async def _state_changed(self, entity_id, from_state, to_state):

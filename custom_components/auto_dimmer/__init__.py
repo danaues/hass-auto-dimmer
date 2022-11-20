@@ -14,13 +14,14 @@ from .const import (
     DOMAIN,
     CONF_INTERVAL,
     CONF_LIGHTS,
+    DEFAULT_INTERVAL,
     CONF_TRANSITION,
     CONF_MAX_BRIGHTNESS,
     CONF_MIN_BRIGHTNESS,
-    CONF_MORNING_START,
-    CONF_MORNING_END,
-    CONF_AFTERNOON_START,
-    CONF_AFTERNOON_END,
+    CONF_MORNING_START_TIME,
+    CONF_MORNING_END_TIME,
+    CONF_AFTERNOON_START_TIME,
+    CONF_AFTERNOON_END_TIME,
 )
 
 from .auto_dimmer import AutoDimmer
@@ -65,16 +66,12 @@ async def async_setup_entry(
     data = config_entry.data
     options = config_entry.options
 
+    if CONF_LIGHTS not in options:
+        # Options have not been configured, skip setup and wait for config/reload.
+        return True
+
     name = data[CONF_NAME]
-    transition = options[CONF_TRANSITION]
     interval = options[CONF_INTERVAL]
-    light_entities = options[CONF_LIGHTS]
-    max_brightness = options[CONF_MAX_BRIGHTNESS]
-    min_brightness = options[CONF_MIN_BRIGHTNESS]
-    morning_start = options[CONF_MORNING_START]
-    morning_end = options[CONF_MORNING_END]
-    afternoon_start = options[CONF_AFTERNOON_START]
-    afternoon_end = options[CONF_AFTERNOON_END]
 
     interval_delta = timedelta(seconds=interval)
 
@@ -82,14 +79,7 @@ async def async_setup_entry(
         hass,
         name,
         interval,
-        light_entities,
-        transition,
-        max_brightness,
-        min_brightness,
-        morning_start,
-        morning_end,
-        afternoon_start,
-        afternoon_end,
+        options,
     )
 
     await myautodimmer._async_init(interval=interval_delta)
@@ -103,8 +93,11 @@ async def update_listener(hass, config_entry: ConfigEntry):
 
 async def async_unload_entry(hass, config_entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    
-    myautodimmer = hass.data[DOMAIN][config_entry.entry_id]
-    unload_ok = await myautodimmer.unsubscribe()
 
-    return unload_ok
+    _LOGGER.debug("auto dimmer: async_unload_entry")
+
+    if myautodimmer := hass.data[DOMAIN].get(config_entry.entry_id):
+        _LOGGER.debug("auto dimmer: async_unload_entry: unsubscribing")
+        return await myautodimmer.unsubscribe()
+
+    return True

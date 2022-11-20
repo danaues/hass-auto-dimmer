@@ -1,40 +1,55 @@
 {
     "config": {
-      "step": {
-        "user": {
-          "title": "Choose a name for the Auto Dimmer",
-          "description": "Auto Dimmer will automatically adjust the brightness of the selected lights",
-          "data": {
-            "name": "Name"
-          }
+        "abort": {
+            "already_configured": "Device is already configured"
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "name": "Name"
+                },
+                "description": "Auto Dimmer will automatically adjust the brightness of the selected lights",
+                "title": "Choose a name for the Auto Dimmer"
+            }
         }
-      },
-      "abort": {
-        "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
-      }
     },
     "options": {
-      "step": {
-        "init": {
-          "title": "Auto Dimmer options",
-          "description": "All settings for the Auto Dimmer component. No options are shown if you have this entry defined in YAML.",
-          "data": {
-            "light_entities": "light entities",
-            "transition": "transition: Transition time for brightness changes. (seconds)",
-            "interval": "interval: Time between brightness updates. (seconds)",
-            "max_brightness": "max_brightness: Highest brightness of lights during a cycle. (%)",
-            "min_brightness": "min_brightness: Lowest brightness of lights during a cycle. (%)",
-            "morning_start": "Time to start the morning brightness transition",
-            "morning_end": "Time to finish the morning brightness transition",
-            "afternoon_start": "Time to start the afternoon brightness transition",
-            "afternoon_end": "Time to finish the afternoon brightness transition"
-          }
+        "error": {
+            "afternoon_schedule": "The afternoon start time is after the afternoon finish time",
+            "entity_missing": "One or more selected light entities are missing from Home Assistant",
+            "midday_schedule": "The afternoon start time is before the morning finish time",
+            "morning_schedule": "The morning start time is after the morning finish time",
+            "option_error": "Invalid option"
+        },
+        "step": {
+            "init": {
+                "data": {
+                    "afternoon_end_type": "Afternoon Finish Time:",
+                    "afternoon_start_type": "Afternoon Start Time:",
+                    "interval": "How often to adjust the brightness. (seconds)",
+                    "light_entities": "Select the lights to adjust",
+                    "max_brightness": "Peak Brightness (between morning and afternoon)",
+                    "min_brightness": "Early Morning and Evening Brighness:",
+                    "morning_end_type": "Morning Finish Time:",
+                    "morning_start_type": "Morning Start Time:"
+                },
+                "description": "Main settings for the Auto Dimmer component.",
+                "title": "Auto Dimmer options"
+            },
+            "schedule": {
+                "data": {
+                    "afternoon_end_offset": "Afternoon Finish: Offset from sunset (+/- minutes)",
+                    "afternoon_end_time": "Afternoon Finish: Time to finish the afternoon brightness transition",
+                    "afternoon_start_offset": "Afternoon Start: Offset from sunset (+/- minutes)",
+                    "afternoon_start_time": "Afternoon Start: Time to start the afternoon brightness transition",
+                    "morning_end_offset": "Morning Finish: Offset from sunrise (+/- minutes)",
+                    "morning_end_time": "Morning Finish: Time to finish the morning brightness transition",
+                    "morning_start_offset": "Morning Start: Offset from sunrise (+/- minutes)",
+                    "morning_start_time": "Morning Start: Time to start the morning brightness transition"
+                },
+                "description": "Time Schedule for Auto Dimmer component.",
+                "title": "Auto Dimmer Schedule"
+            }
         }
-      },
-      "error": {
-        "option_error": "Invalid option",
-        "entity_missing": "One or more selected light entities are missing from Home Assistant"
-      }
     }
-  }
-  
+}
