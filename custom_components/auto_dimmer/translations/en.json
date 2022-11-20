@@ -17,6 +17,7 @@
         "error": {
             "afternoon_schedule": "The afternoon start time is after the afternoon finish time",
             "entity_missing": "One or more selected light entities are missing from Home Assistant",
+            "light_unsupported": "One or more selected light entities do not support brightness, check the log",
             "midday_schedule": "The afternoon start time is before the morning finish time",
             "morning_schedule": "The morning start time is after the morning finish time",
             "option_error": "Invalid option"
@@ -26,7 +27,7 @@
                 "data": {
                     "afternoon_end_type": "Afternoon Finish Time:",
                     "afternoon_start_type": "Afternoon Start Time:",
-                    "interval": "How often to adjust the brightness. (seconds)",
+                    "interval": "How often to adjust the brightness. (minutes)",
                     "light_entities": "Select the lights to adjust",
                     "max_brightness": "Peak Brightness (between morning and afternoon)",
                     "min_brightness": "Early Morning and Evening Brighness:",

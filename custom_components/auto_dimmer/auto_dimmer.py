@@ -113,8 +113,8 @@ class AutoDimmer():
     def _calculate_schedule(self):
         """calculate sunrise and sunset times for current day"""
    
-        self._sunrise_time = dt_util.as_local(get_astral_event_next(self._hass, SUN_EVENT_SUNRISE))
-        self._sunset_time = dt_util.as_local(get_astral_event_next(self._hass, SUN_EVENT_SUNSET))
+        self._sunrise_time = dt_util.as_local(get_astral_event_next(self._hass, SUN_EVENT_SUNRISE, self._today))
+        self._sunset_time = dt_util.as_local(get_astral_event_next(self._hass, SUN_EVENT_SUNSET, self._today))
         
         _LOGGER.debug("schedule; sunrise time: %s", self._sunrise_time)
         _LOGGER.debug("schedule; sunset time: %s",  self._sunset_time)
@@ -169,6 +169,7 @@ class AutoDimmer():
 
     async def _set_brightness(self, light: str, brightness: int):
         """Set the brightness of a light entity."""
+
         await self._hass.services.async_call(
             LIGHT_DOMAIN,
             SERVICE_TURN_ON,

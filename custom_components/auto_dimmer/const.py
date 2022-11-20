@@ -8,10 +8,7 @@ import voluptuous as vol
 
 DOMAIN = "auto_dimmer"
 
-NONE_STR = "None"
-
-DEFAULT_INTERVAL = 300
-DEFAULT_TRANSITION = 60
+DEFAULT_INTERVAL = 5
 DEFAULT_LIGHTS = []
 DEFAULT_MAX_BRIGHTNESS = 255
 DEFAULT_MIN_BRIGHTNESS = 25
@@ -30,7 +27,6 @@ DEFAULT_MORNING_END_TIME = dt_util.parse_time("11:00:00")
 DEFAULT_AFTERNOON_START_TIME = dt_util.parse_time("14:00:00")
 DEFAULT_AFTERNOON_END_TIME = dt_util.parse_time("17:00:00")
 DEFAULT_OFFSET = 0
-
 
 CONF_LIGHTS = "light_entities"
 CONF_INTERVAL = "interval"
@@ -60,8 +56,7 @@ def int_between(min_int, max_int):
     """Return an integer between 'min_int' and 'max_int'."""
     return vol.All(vol.Coerce(int), vol.Range(min=min_int, max=max_int))
 
-
-VALIDATION_TUPLES = [
+OPTION_INIT_FIELDS = [
     (CONF_LIGHTS, DEFAULT_LIGHTS, cv.entity_ids),
     (CONF_INTERVAL, DEFAULT_INTERVAL, cv.positive_int),
     (CONF_MIN_BRIGHTNESS, DEFAULT_MIN_BRIGHTNESS, int_between(1, 255)),

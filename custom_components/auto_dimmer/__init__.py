@@ -72,8 +72,8 @@ async def async_setup_entry(
 
     name = data[CONF_NAME]
     interval = options[CONF_INTERVAL]
-
-    interval_delta = timedelta(seconds=interval)
+    interval_seconds = interval * 60
+    interval_delta = timedelta(seconds=interval_seconds)
 
     hass.data[DOMAIN][entry_id] = myautodimmer = AutoDimmer(
         hass,

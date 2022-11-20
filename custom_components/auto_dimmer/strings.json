@@ -20,7 +20,7 @@
           "description": "Main settings for the Auto Dimmer component.",
           "data": {
             "light_entities": "Select the lights to adjust",
-            "interval": "How often to adjust the brightness. (seconds)",
+            "interval": "How often to adjust the brightness. (minutes)",
             "max_brightness": "Peak Brightness (between morning and afternoon)",
             "min_brightness": "Early Morning and Evening Brighness:",
             "morning_start_type": "Morning Start Time:",
@@ -47,6 +47,7 @@
       "error": {
         "option_error": "Invalid option",
         "entity_missing": "One or more selected light entities are missing from Home Assistant",
+        "light_unsupported": "One or more selected light entities do not support brightness, check the log",
         "morning_schedule": "The morning start time is after the morning finish time",
         "midday_schedule": "The afternoon start time is before the morning finish time",
         "afternoon_schedule": "The afternoon start time is after the afternoon finish time"
