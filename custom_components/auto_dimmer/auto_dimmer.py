@@ -8,10 +8,10 @@ from typing import Any
 
 _LOGGER = logging.getLogger(__name__)
 
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, Event, EventStateChangedData
 from homeassistant.components.light import DOMAIN as LIGHT_DOMAIN
 from homeassistant.components.light import ATTR_BRIGHTNESS, ATTR_TRANSITION
-from homeassistant.helpers.event import async_track_time_interval, async_track_state_change
+from homeassistant.helpers.event import async_track_time_interval, async_track_state_change_event
 from homeassistant.helpers.sun import get_astral_event_next
 import homeassistant.util.dt as dt_util
 
@@ -151,8 +151,8 @@ class AutoDimmer():
     async def _async_init(self, interval):
         _LOGGER.debug("AutoDimmer _async_init; interval: %s", interval)
 
-        self._track_state_change = async_track_state_change(
-            self._hass, self._light_entities, self._state_changed, to_state="on"
+        self._track_state_change_event = async_track_state_change_event(
+            self._hass, self._light_entities, self._state_changed
         )
 
         self._track_time_interval = async_track_time_interval(self._hass, self.async_update, interval)
@@ -163,7 +163,7 @@ class AutoDimmer():
     async def unsubscribe(self) -> bool:
         """Unsubscribe to tracks for unload."""
         self._track_time_interval()
-        self._track_state_change()
+        self._track_state_change_event()
         return True
 
 
@@ -260,8 +260,12 @@ class AutoDimmer():
                 _LOGGER.debug("auto dimmer update: light entity: %s state is off, no adjustment", light_entity)
             
     
-    async def _state_changed(self, entity_id, from_state, to_state):
+    async def _state_changed(self, event):
         
+        from_state = event.data["old_state"]
+        to_state = event.data["new_state"]
+        entity_id = event.data["entity_id"]
+
         if from_state is None and to_state is None:
             # Entity is not ready yet, ignore:
             _LOGGER.debug("_state_changed - no ready: %s ",entity_id)
