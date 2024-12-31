@@ -52,15 +52,11 @@ CONF_AFTERNOON_END_OFFSET = "afternoon_end_offset"
 STEP_IMPORT_FAILED = "import_failed"
 ABORT_REASON_IMPORT_FAILED = "import_failed"
 
-def int_between(min_int, max_int):
-    """Return an integer between 'min_int' and 'max_int'."""
-    return vol.All(vol.Coerce(int), vol.Range(min=min_int, max=max_int))
-
 OPTION_INIT_FIELDS = [
     (CONF_LIGHTS, DEFAULT_LIGHTS, cv.entity_ids),
     (CONF_INTERVAL, DEFAULT_INTERVAL, cv.positive_int),
-    (CONF_MIN_BRIGHTNESS, DEFAULT_MIN_BRIGHTNESS, int_between(1, 255)),
-    (CONF_MAX_BRIGHTNESS, DEFAULT_MAX_BRIGHTNESS, int_between(1, 255)),
+    (CONF_MIN_BRIGHTNESS, DEFAULT_MIN_BRIGHTNESS, selector({"number": {"mode": "slider", "min": 1, "max": 255, "unit_of_measurement": "lumens"}})),
+    (CONF_MAX_BRIGHTNESS, DEFAULT_MAX_BRIGHTNESS, selector({"number": {"mode": "slider", "min": 1, "max": 255, "unit_of_measurement": "lumens"}})),
     (CONF_MORNING_START_TYPE, DEFAULT_MORNING_START_TYPE, selector({"select": {"mode": "dropdown", "options": [TIME_OPTION_SPECIFY, TIME_OPTION_SUNRISE_OFFSET]}})),
     (CONF_MORNING_END_TYPE, DEFAULT_MORNING_END_TYPE, selector({"select": {"mode": "dropdown", "options": [TIME_OPTION_SPECIFY, TIME_OPTION_SUNRISE_OFFSET]}})),
     (CONF_AFTERNOON_START_TYPE, DEFAULT_AFTERNOON_START_TYPE, selector({"select": {"mode": "dropdown", "options": [TIME_OPTION_SPECIFY, TIME_OPTION_SUNSET_OFFSET]}})),

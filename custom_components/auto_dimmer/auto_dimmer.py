@@ -228,7 +228,6 @@ class AutoDimmer():
 
         new_brightness = await self._calculate_brightness()
 
-        #async_dispatcher_send(self._hass, "auto_dimmer_KTEST")
         for light_entity in self._light_entities:
             
             current_state = self._hass.states.get(light_entity)
@@ -261,7 +260,8 @@ class AutoDimmer():
             
     
     async def _state_changed(self, event):
-        
+        """state of a tracked light entity has changed, process based on new state"""
+
         from_state = event.data["old_state"]
         to_state = event.data["new_state"]
         entity_id = event.data["entity_id"]
