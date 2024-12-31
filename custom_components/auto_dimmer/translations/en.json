@@ -30,7 +30,7 @@
                     "interval": "How often to adjust the brightness. (minutes)",
                     "light_entities": "Select the lights to adjust",
                     "max_brightness": "Peak Brightness (between morning and afternoon)",
-                    "min_brightness": "Early Morning and Evening Brighness:",
+                    "min_brightness": "Early Morning and Evening Brightness:",
                     "morning_end_type": "Morning Finish Time:",
                     "morning_start_type": "Morning Start Time:"
                 },
